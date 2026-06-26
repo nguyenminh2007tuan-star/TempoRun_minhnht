@@ -1,0 +1,18 @@
+# generated artifacts — regenerate with extract_keyframes.py / extract_embed.py / retrieve.py
+artifacts/
+shards/
+*.npz
+*.npy
+submission*.json
+failed_*.txt
+kf_*/
+keyframes/
+__pycache__/
+*.pyc
+
+# dev/editor cruft — never ship
+*.bak
+*.orig
+*.swp
+.DS_Store
+.ipynb_checkpoints/
