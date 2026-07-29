@@ -214,6 +214,16 @@ tar xf index_qwen8b.tar && tar xf index_siglip2.tar
 Mỗi shard là `<video_id>.npz` chứa `emb[K, D] float16` và `ts_ms[K] int32`.
 Số shard kỳ vọng: **index_qwen8b 5006**, **index_siglip2 5004** (xem §11).
 
+**Cách hai index được tạo (để tái lập chính xác):**
+
+| Index | Tạo bằng | Ghi chú |
+|---|---|---|
+| `index_siglip2` | `extract_embed.py` trong repo này | model `ViT-SO400M-14-SigLIP2-378` / `webli`, fp16 |
+| `index_qwen8b` | pipeline embed nội bộ của đội (máy khác, cùng model `Qwen/Qwen3-VL-Embedding-8B`) | `extract_embed_qwen.py` trong repo tạo ra index **cùng contract** — `emb[K,4096] float16` đã L2-normalize + `ts_ms[K] int32` — nhưng **không đảm bảo trùng bit-for-bit** với bản đã nộp |
+
+Vì vậy **nên dùng index tải từ Release** để tái lập đúng kết quả chính thức; xây lại chỉ
+là đường dự phòng.
+
 ### 5.3 Artifact phía truy vấn — **đã nộp kèm trong repo** (`precomputed/`, 12 MB)
 
 | File | Sinh bởi | Vì sao nộp kèm |
@@ -241,6 +251,10 @@ File task (`data/private_round_tasks.jsonl`, `data/public_round_tasks.jsonl`) �
 ```json
 {"task_id": "T0001", "description": "...", "submission_type": "temporal_video_retrieval", "max_predictions": 10}
 ```
+
+Repo **không kèm video** — bộ V3C1/V3C2 là dữ liệu của cuộc thi, chỉ cần trỏ đường dẫn
+tới nơi đã có sẵn. Chỉ index embedding được nộp kèm (§5.2) vì nó là kết quả tính toán
+nhiều giờ GPU.
 
 Mọi đường dẫn đều truyền qua tham số dòng lệnh hoặc file cấu hình; **không có đường dẫn
 tuyệt đối nào bị hard-code** trong các script của pipeline chính.
@@ -291,7 +305,13 @@ mkdir -p outputs
 
 ```bash
 # Stage 0a — trích keyframe (CPU, ffmpeg; nhiều giờ, chạy song song được, resumable)
-python extract_keyframes.py --dataset-root $DATASET --out keyframes
+#   LƯU Ý: --dataset-root trỏ THẲNG vào từng collection (V3C1, V3C2), KHÔNG phải thư mục
+#   cha. Script lấy TÊN thư mục làm tiền tố video_id (V3C1 -> v3c1_00001) và tìm theo
+#   <root>/videos/<id>/<id>.mp4. Truyền thư mục cha sẽ không khớp video nào.
+python extract_keyframes.py \
+    --dataset-root $DATASET/V3C1 \
+    --dataset-root $DATASET/V3C2 \
+    --out keyframes --max-gap-s 2.0
 #   chạy song song nhiều tiến trình: thêm --shard-index i --shard-count N
 
 # Stage 4 — fusion RRF -> candidate pool
@@ -339,7 +359,12 @@ python embed_siglip2_private.py        # -> siglip2_subs_private.npz
 ```bash
 python extract_embed.py      --keyframes keyframes --out index_siglip2 \
                              --model ViT-SO400M-14-SigLIP2-378 --pretrained webli --precision fp16
-python extract_embed_qwen.py --keyframes keyframes --out index_qwen8b
+
+# BẮT BUỘC truyền --model: mặc định của script là bản 2B, trong khi index dùng cho
+# kết quả chính thức là bản 8B (chiều 4096). Chạy thiếu cờ này sẽ ra index sai chiều
+# và không khớp với query embedding.
+python extract_embed_qwen.py --keyframes keyframes --out index_qwen8b \
+                             --model Qwen/Qwen3-VL-Embedding-8B
 ```
 
 ### Kiểm tra tính trung thực của bước hậu xử lý (tuỳ chọn)
@@ -361,6 +386,8 @@ lập bài nộp, không cần chỉnh gì thêm.
 
 | Tham số | Giá trị | Ở đâu |
 |---|---|---|
+| Khoảng cách keyframe tối đa | 2.0 s (`--max-gap-s`) — quyết định số keyframe của index | `extract_keyframes.py` |
+| Model dựng index ảnh | `Qwen/Qwen3-VL-Embedding-8B` — **phải truyền `--model`**, mặc định script là bản 2B | `extract_embed_qwen.py` |
 | Trọng số encoder | SigLIP2 = 1, Qwen8B = 8 | `configs/enc_SQ8_private.json` |
 | Hằng số RRF `k` | 60 | `retrieve_fusion.py --rrf-k` |
 | Ứng viên mỗi encoder | 400 | `--cand-keyframes` |
