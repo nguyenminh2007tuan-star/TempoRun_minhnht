@@ -145,7 +145,20 @@ Index là embedding của toàn bộ keyframe; xây lại mất khoảng 6 giờ
 `index_qwen8b.tar` vượt giới hạn 2 GB mỗi file của GitHub Release nên được chia thành ba
 phần; ghép lại bằng `cat index_qwen8b.tar.part* > index_qwen8b.tar` (script bên dưới tự làm).
 
-_(Đường dẫn tải + checksum: **điền link GitHub Release trước khi nộp**.)_
+**Tải tại:** https://github.com/nguyenminh2007tuan-star/TempoRun_minhnht/releases/tag/v1.0
+(link trực tiếp: `.../releases/download/v1.0/<tên-file>`) — công khai, không cần đăng nhập.
+
+Checksum SHA-256 (cũng có trong `index.sha256` của Release):
+
+```
+35e99e4f8193c3faee4946ba6f91e851f32ae6acdf120edccd876660accd96fa  index_siglip2.tar
+6073119c54989e780e3e9338dace16dc44d4cf7344682d0973cb294f7a7da0cf  index_qwen8b.tar.part00
+79c6939a9c57619263e9621deeb5b3906453e17f4fcd4ba491963366a1c5637e  index_qwen8b.tar.part01
+e72f576692a767854252fb24a59cf9924daea8f3e2b4e97ddf302c5a7a5a0e09  index_qwen8b.tar.part02
+```
+
+Sau khi ghép, `index_qwen8b.tar` phải có SHA-256
+`bf3f03a29c358ac07fc7d9deabda3d2d5754daa87dedc88763766b8747f694b1`.
 
 Cách tự động — tải, kiểm checksum, giải nén, đếm shard trong một lệnh:
 
