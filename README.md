@@ -1,6 +1,7 @@
 # TempoRun 2026 — Text→Keyframe Temporal Retrieval
 
-Đội thi: **LongJustin** · Phương pháp: **SQ8-Fusion → VLM-Rerank → Centroid-Nudge → Consensus**
+Đội thi: **LongJustin** · Phương pháp: **SQ8-Fusion → VLM-Rerank → Consensus**
+_(pipeline có thêm tầng Centroid-Nudge tuỳ chọn; bản nộp cao điểm nhất ở vòng private tắt tầng này — xem §7)_
 
 ---
 
@@ -20,11 +21,12 @@ Pipeline gồm bốn tầng:
 2. **Rerank bằng VLM cross-encoder** (Qwen3-VL-Reranker-8B, fp16) trên top-100 của pool.
    Đây là tín hiệu mạnh nhất và là thứ quyết định thứ hạng.
 
-3. **Centroid-nudge rank-1.** Reranker hay chọn đúng cảnh nhưng đậu ở **mép** interval.
+3. **Centroid-nudge rank-1** *(có trong pipeline, nhưng bản nộp cao nhất KHÔNG bật —
+   xem ghi chú bên dưới)*. Reranker hay chọn đúng cảnh nhưng đậu ở **mép** interval.
    Bước này dời `frame_ms` của rank-1 về **trọng tâm** của cụm điểm quanh nó (softmax
    trên logit, cửa sổ ±10 s, cùng video). Trường trọng số lấy từ hai pass "clip-strip":
    mỗi ứng viên được ghép thành dải 3 khung / 5 khung liên tiếp để reranker **nhìn thấy
-   chuyển động** thay vì một khung tĩnh. Trên vòng public bước này là mức tăng lớn nhất.
+   chuyển động** thay vì một khung tĩnh.
 
 4. **Consensus rank-2.** Khi argmax của trường 3-khung và 5-khung **cùng bầu** một mốc
    khác hẳn rank-1, mốc đó được chèn vào rank-2 và đẩy đuôi xuống. Về cấu trúc, R@1
@@ -33,6 +35,11 @@ Pipeline gồm bốn tầng:
 Điểm chung của tầng 3 và 4: chúng **không trộn thêm tín hiệu ngoài** (các thí nghiệm
 OCR / VLM-judge / ensemble đều làm điểm tệ đi) mà chỉ **đọc kỹ hơn chính reranker** —
 trường điểm, cửa sổ chuyển động, sự đồng thuận giữa hai cửa sổ.
+
+> **Cấu hình cho kết quả chính thức.** Vòng private được nộp 5 biến thể; bản **cao điểm
+> nhất là `slot5_strip_NOcent`** — dùng truy vấn đã bỏ scaffolding, có consensus rank-2,
+> **tắt centroid-nudge**. Tức tầng 3 giúp ở vòng public nhưng **không** giúp ở vòng
+> private. Xem §7 và §11.
 
 ---
 
@@ -225,9 +232,16 @@ tuyệt đối nào bị hard-code** trong các script của pipeline chính.
 1→10 không trùng, `frame_ms` là số nguyên, **không có cặp `(video_id, frame_ms)` trùng
 trong cùng một task**.
 
-**Bản chính thức: `submits_private/slot1_ANCHOR_raw_clip3.zip`** — dùng đúng công thức
-đạt điểm cao nhất ở vòng public. Bốn file còn lại là các biến thể đã nộp trong cùng vòng
-(luật lấy điểm cao nhất trong các lượt nộp).
+**Bản chính thức: `submits_private/slot5_strip_NOcent.zip`** — đây là bản đạt điểm cao
+nhất trong năm lượt nộp của vòng private (luật tính điểm cao nhất). Công thức của nó:
+truy vấn **đã bỏ scaffolding** → rerank → **consensus rank-2**, **KHÔNG dùng centroid-nudge**.
+
+Bốn file còn lại là các biến thể đã nộp trong cùng vòng, trong đó
+`slot1_ANCHOR_raw_clip3.zip` tái hiện đúng công thức thắng ở vòng public (truy vấn gốc +
+centroid-nudge + consensus).
+
+Điểm đáng chú ý: **centroid-nudge giúp ở vòng public nhưng không giúp ở vòng private.**
+Xem §11 để biết vì sao và điều đó ảnh hưởng gì tới việc tái lập.
 
 ---
 
@@ -325,6 +339,7 @@ lập bài nộp, không cần chỉnh gì thêm.
 | Batch rerank | 1-khung 8 · 3-khung 4 · 5-khung 2 | `--batch-1f/--batch-c3/--batch-c5` |
 | Hình học clip-strip | 3-khung `[-2, 0, +2] s` · 5-khung `[-8, -4, 0, +4, +8] s` | `build_pod_private.py` |
 | Cửa sổ centroid | ±10 000 ms, softmax nhiệt độ 1, **chỉ rank-1** | `postprocess_private.py` |
+| **Bản chính thức** | **`slot5_strip_NOcent`** — query strip, consensus, **centroid TẮT** | `postprocess_private.py` |
 | Cổng consensus | 5 000 ms | `postprocess_private.py` |
 | Revision reranker | `b212dc8c…75c04` | `gpu_pack/private_rerank_all.py` |
 
@@ -378,6 +393,17 @@ keyframe**, trung bình ~116 keyframe/clip. Muốn khớp tuyệt đối thì d�
 (chúng vốn chạy trong notebook). Vì **kết quả của chúng đã nộp kèm trong `precomputed/`**,
 người chấm **không cần chạy lại**; nếu muốn chạy, hãy sửa hai hằng số đường dẫn ở đầu file.
 
+**Centroid-nudge ăn ở public nhưng không ăn ở private.** Trên vòng public, dời rank-1 về
+trọng tâm cụm điểm là mức tăng lớn nhất — reranker hay đậu ở mép interval nên kéo vào
+giữa thì trúng nhiều hơn. Trên vòng private, biến thể **tắt** centroid
+(`slot5_strip_NOcent`) lại cho điểm cao nhất trong 5 lượt nộp. Vòng private mù (không có
+phản hồi điểm khi đang nộp) nên năm biến thể được thiết kế để **phủ trục bất định này**
+thay vì đặt cược vào một giả định.
+
+Hệ quả khi tái lập: `postprocess_private.py` sinh **cả 5 biến thể** trong một lần chạy;
+bản chính thức là `slot5_strip_NOcent`. Không cần chọn tham số — chạy đúng lệnh ở §9 là
+có đủ, kể cả bản public-style (`slot1_ANCHOR_raw_clip3`) để đối chiếu.
+
 **Tính tất định và random seed.** Pipeline **không có nguồn ngẫu nhiên nào**, nên không
 cần đặt seed: không có bước huấn luyện, toàn bộ là suy luận; LLM sinh sub-query chạy
 **greedy** (`do_sample=False`, không temperature/top-p); fusion, rerank và hậu xử lý đều
@@ -401,7 +427,7 @@ liệu test ra dịch vụ ngoài. Model duy nhất tải từ mạng là trọn
 | Mục | Nội dung |
 |---|---|
 | Tên đội | **LongJustin** |
-| Tên phương pháp | SQ8-Fusion → VLM-Rerank → Centroid-Nudge → Consensus |
+| Tên phương pháp | SQ8-Fusion → VLM-Rerank → Consensus (centroid-nudge tuỳ chọn) |
 | Repository | https://github.com/nguyenminh2007tuan-star/TempoRun_minhnht |
 | Commit / tag | release tag **`v1.0`** |
 | Cài đặt môi trường | Conda hoặc pip — xem §4 |
