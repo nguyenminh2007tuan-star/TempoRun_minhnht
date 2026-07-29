@@ -1,0 +1,24 @@
+[
+ {
+  "name": "siglip2-so400m-378",
+  "shards": "index_siglip2/shards",
+  "model": "ViT-SO400M-14-SigLIP2-378",
+  "pretrained": "webli",
+  "precision": "fp16",
+  "type": "clip",
+  "query": "subs",
+  "weight": 1,
+  "subs_emb": "precomputed/siglip2_subs_private.npz"
+ },
+ {
+  "name": "qwen3vl-emb-8b",
+  "shards": "index_qwen8b/shards",
+  "model": "Qwen/Qwen3-VL-Embedding-8B",
+  "pretrained": "",
+  "precision": "fp16",
+  "type": "qwen",
+  "query": "full",
+  "weight": 8,
+  "query_emb": "precomputed/query_emb_qwen8b_private.npz"
+ }
+]

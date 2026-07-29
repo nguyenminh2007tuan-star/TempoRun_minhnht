@@ -1,0 +1,1 @@
+[{"name":"q8b","shards":"/home/trec26/tempo_idx/index_qwen8b/shards","model":"x","pretrained":"","type":"qwen","query":"full","weight":8,"query_emb":"/home/trec26/tempo_idx/query_emb_qwen8b.npz"}]

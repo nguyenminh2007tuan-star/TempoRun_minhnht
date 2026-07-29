@@ -27,19 +27,44 @@ def list_keyframe_dirs(kf_root):
     return [Path(p).parent for p in sorted(glob.glob(os.path.join(kf_root, "*", "ts_ms.npy")))]
 
 
-def load_frames(vdir):
-    """Load keyframe JPGs (in order) + aligned timestamps for one video."""
-    from PIL import Image
+def list_frames(vdir):
+    """Keyframe JPG paths (in order) + aligned timestamps — no decoding.
+
+    The GPU path decodes in nvjpeg, so it wants paths, not PIL images.
+    """
     files = sorted(glob.glob(os.path.join(vdir, "k_*.jpg")))
     ts = np.load(os.path.join(vdir, "ts_ms.npy"))
     n = min(len(files), len(ts))
-    imgs, kept_ts = [], []
-    for i in range(n):
+    return files[:n], [int(t) for t in ts[:n]]
+
+
+def load_frames(vdir, workers=16):
+    """Load keyframe JPGs (in order) + aligned timestamps for one video.
+
+    Reads are issued from a thread pool: the frames live on NFS, where per-file
+    latency (not bandwidth) dominates, and PIL releases the GIL while decoding
+    JPEG — so threads overlap both the round-trips and the decodes.
+    """
+    from PIL import Image
+    from concurrent.futures import ThreadPoolExecutor
+    files = sorted(glob.glob(os.path.join(vdir, "k_*.jpg")))
+    ts = np.load(os.path.join(vdir, "ts_ms.npy"))
+    n = min(len(files), len(ts))
+
+    def _read(i):
         try:
-            imgs.append(Image.open(files[i]).convert("RGB"))
-            kept_ts.append(int(ts[i]))
+            return i, Image.open(files[i]).convert("RGB")
         except Exception:
-            continue
+            return i, None
+
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        loaded = list(ex.map(_read, range(n)))
+
+    imgs, kept_ts = [], []
+    for i, im in loaded:  # ex.map preserves input order
+        if im is not None:
+            imgs.append(im)
+            kept_ts.append(int(ts[i]))
     return imgs, kept_ts
 
 
@@ -50,9 +75,15 @@ def main():
     ap.add_argument("--model", default="ViT-B-32")
     ap.add_argument("--pretrained", default="laion2b_s34b_b79k")
     ap.add_argument("--device", default="cuda:0")
+    ap.add_argument("--precision", default="fp32", choices=["fp32", "fp16", "bf16"])
     ap.add_argument("--batch-size", type=int, default=64)
     ap.add_argument("--shard-index", type=int, default=0)
     ap.add_argument("--shard-count", type=int, default=1)
+    ap.add_argument("--loader-workers", type=int, default=16,
+                    help="threads used to read/decode keyframe JPGs (--cpu-preprocess only)")
+    ap.add_argument("--cpu-preprocess", action="store_true",
+                    help="decode/resize with PIL on the CPU instead of nvjpeg on the GPU "
+                         "(much slower on a CPU-contended box; kept for comparison)")
     ap.add_argument("--limit", type=int, default=0, help="debug: cap #videos")
     args = ap.parse_args()
 
@@ -69,8 +100,8 @@ def main():
     print(f"[shard {args.shard_index}/{args.shard_count}] {len(mine)}/{len(vdirs)} videos", flush=True)
 
     from clip_model import ClipModel
-    clip = ClipModel(args.model, args.pretrained, device=args.device)
-    print(f"[clip] {args.model}/{args.pretrained} on {args.device} dim={clip.dim}", flush=True)
+    clip = ClipModel(args.model, args.pretrained, device=args.device, precision=args.precision)
+    print(f"[clip] {args.model}/{args.pretrained} on {args.device} precision={args.precision} dim={clip.dim}", flush=True)
 
     t0 = time.time(); done = nframes = failed = 0
     for vdir in mine:
@@ -80,12 +111,18 @@ def main():
             done += 1
             continue
         try:
-            imgs, ts = load_frames(vdir)
-            if not imgs:
-                raise RuntimeError("no frames")
-            emb = clip.encode_images(imgs, batch_size=args.batch_size)
+            if args.cpu_preprocess:
+                imgs, ts = load_frames(vdir, workers=args.loader_workers)
+                if not imgs:
+                    raise RuntimeError("no frames")
+                emb = clip.encode_images(imgs, batch_size=args.batch_size)
+            else:
+                files, ts = list_frames(vdir)
+                if not files:
+                    raise RuntimeError("no frames")
+                emb = clip.encode_image_files(files, batch_size=args.batch_size)
             np.savez(out_npz, emb=emb.astype(np.float16), ts_ms=np.asarray(ts, dtype=np.int32))
-            nframes += len(imgs)
+            nframes += len(ts)
         except Exception as ex:
             failed += 1
             with open(fail_log, "a") as f:

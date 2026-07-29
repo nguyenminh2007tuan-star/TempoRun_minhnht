@@ -1,0 +1,214 @@
+{
+ "T0001": {
+  "full": "A dreadlocked man plays an acoustic guitar in a historic stone square while a man in a black jacket dances energetically, turns away to bend down, and then rises holding a blue object; identify the moment the dancer stands up with the object in hand.",
+  "subs": [
+   "A dreadlocked man plays an acoustic guitar in a historic stone square.",
+   "A man in a black jacket dances energetically in the square.",
+   "A man in a black jacket turns away and bends down.",
+   "A man in a black jacket stands up holding a blue object."
+  ]
+ },
+ "T0003": {
+  "full": "Identify the moment the scene transitions from a close-up profile of a woman with long red hair gazing left with a blurred red bottle in the background to a beach setting where she sits in the foreground wearing a large grey fur hat, with three figures in white hazmat suits and a person in a plaid shirt standing near the waterline in the background.",
+  "subs": [
+   "A woman with long red hair gazes left with a blurred red bottle in the background.",
+   "A woman sits in the foreground wearing a large grey fur hat on a beach.",
+   "Three figures in white hazmat suits stand near the waterline in the background.",
+   "A person in a plaid shirt stands near the waterline in the background."
+  ]
+ },
+ "T0004": {
+  "full": "A woman in a pink shirt stands behind a seated child wearing a black cape and holding a white brush, spraying hair with a purple bottle. After briefly exiting the frame, she returns to manually style the child’s hair. The sequence concludes with a close-up of her hands working on the back of the child’s head while the child remains still.",
+  "subs": [
+   "A woman in a pink shirt stands behind a seated child.",
+   "The child wears a black cape and holds a white brush.",
+   "The woman sprays the child's hair with a purple bottle.",
+   "A close-up shows the woman's hands styling the child's hair."
+  ]
+ },
+ "T0007": {
+  "full": "After the camera pans left to reveal the platform bench and lamppost, and then shifts back to focus on the train's markings, what is the specific text visible near the door of the blue and yellow train?",
+  "subs": [
+   "A blue and yellow train with visible markings near the door.",
+   "A platform bench and a lamppost on the train station.",
+   "The camera pans left to show the platform bench and lamppost.",
+   "The camera shifts back to focus on the train's markings."
+  ]
+ },
+ "T0008": {
+  "full": "Identify the specific instant when the camera reaches the summit of Montagne Pelée and the text banner describing the 'plateau des Palmistes' appears, following the tracking of the red route from the departure at Le Prêcheur.",
+  "subs": [
+   "A red route trail leads from Le Prêcheur up Montagne Pelée.",
+   "The camera tracks the red path toward the mountain summit.",
+   "A text banner describing the plateau des Palmistes appears on screen.",
+   "The camera reaches the summit of Montagne Pelée at this moment."
+  ]
+ },
+ "T0009": {
+  "full": "What is the visual content at the exact moment the video transitions from the women dancing in the town square to the dark scene featuring the man in glasses and the woman in red?",
+  "subs": [
+   "Women dancing in a bright town square",
+   "A man wearing glasses standing in a dark scene",
+   "A woman wearing a red outfit in a dark scene",
+   "The transition moment between the town square dance and the dark scene"
+  ]
+ },
+ "T0010": {
+  "full": "Identify the moment the silver hatchback crosses the cobblestone street, occurring after the eternal flame scene and just before the blue street sign is shown.",
+  "subs": [
+   "a silver hatchback driving on a cobblestone street",
+   "a man standing near an eternal flame",
+   "a blue street sign displayed in the scene"
+  ]
+ },
+ "T0012": {
+  "full": "Identify the moment the camera shifts focus from the musician playing the Roland FP-4 keyboard to the drummer in the red shirt, just before the guitarist enters the frame.",
+  "subs": [
+   "A musician playing a Roland FP-4 keyboard in a band setting.",
+   "A drummer wearing a red shirt performing behind the keyboard player.",
+   "A guitarist entering the frame to join the musicians on stage."
+  ]
+ },
+ "T0013": {
+  "full": "Identify the moment the camera pulls back from the man in the black 'FOX' t-shirt and his companion in the red tank top to reveal the wider festival scene with the blue tent and Ferris wheel.",
+  "subs": [
+   "A man wearing a black t-shirt with the word FOX on it.",
+   "His companion wearing a red tank top standing beside him.",
+   "A blue tent visible in the wider festival background.",
+   "A Ferris wheel spinning in the distance during the day."
+  ]
+ },
+ "T0015": {
+  "full": "Identify the moment the camera zooms in to a close-up of the woman's face, occurring after she has been looking upward with her mouth gradually opening wider.",
+  "subs": [
+   "A woman looking upward with her mouth gradually opening wider.",
+   "The camera zooms in to a close-up of the woman's face."
+  ]
+ },
+ "T0016": {
+  "full": "Identify the moment the video cuts from the close-up of a hand petting a dog on a plaid blanket to the wide shot of the party where a person in a plaid shirt is holding a red-and-white striped object.",
+  "subs": [
+   "A close-up of a hand petting a dog on a plaid blanket.",
+   "A wide shot of a party scene with multiple people.",
+   "A person wearing a plaid shirt holding a red-and-white striped object."
+  ]
+ },
+ "T0020": {
+  "full": "When does the gray-haired man resume speaking with his mouth open, immediately following the moment he pauses with his mouth closed?",
+  "subs": [
+   "A gray-haired man pauses with his mouth closed.",
+   "A gray-haired man resumes speaking with his mouth open."
+  ]
+ },
+ "T0022": {
+  "full": "After the sequence showing the curly-haired man on the bed, the suited man entering the room, the men outdoors, and the group of three men adjusting their ties and suspenders, what is the specific action shown in the close-up shot that follows?",
+  "subs": [
+   "A curly-haired man lying on a bed.",
+   "A suited man walking into a room.",
+   "Three men standing outdoors in a group.",
+   "A close-up shot of three men adjusting their ties and suspenders."
+  ]
+ },
+ "T0023": {
+  "full": "A skier in a green and purple outfit descends a snowy slope, passes a group of spectators, and navigates a snow feature; identify the moment the skier launches into the air for the jump.",
+  "subs": [
+   "A skier in a green and purple outfit descends a snowy slope.",
+   "A group of spectators stands on the snowy slope watching the skier.",
+   "A snow feature is located on the slope for the skier to navigate.",
+   "A skier in a green and purple outfit launches into the air for a jump."
+  ]
+ },
+ "T0024": {
+  "full": "At what timestamp does the aerial view transition from the dense tree line bordering the soccer field to the wide landscape revealing the distant tall structure?",
+  "subs": [
+   "Aerial view of dense tree line bordering a soccer field.",
+   "Wide landscape shot revealing a distant tall structure.",
+   "Camera transition from tree line to wide landscape view."
+  ]
+ },
+ "T0026": {
+  "full": "After the man in the black jacket sings and the scene shifts to the bride, at what exact moment does the bride release her bouquet upward, just before the camera tilts up to track it toward the ceiling?",
+  "subs": [
+   "A man in a black jacket sings in the scene.",
+   "A bride stands in the room holding a bouquet.",
+   "The bride releases her bouquet upward into the air.",
+   "The camera tilts up to track the bouquet toward the ceiling."
+  ]
+ },
+ "T0028": {
+  "full": "Identify the moment when the bright lens flare, which sweeps across the screen after the text resolves from a blur, is centered over the title 'DEL 7', immediately before the background image of the person becomes visible.",
+  "subs": [
+   "A bright lens flare sweeping across the screen after blurred text resolves.",
+   "The flare centered over the title DEL 7.",
+   "The background image of a person becoming visible."
+  ]
+ },
+ "T0031": {
+  "full": "In a timelapse of a grassy hillside where the camera first pans left to reveal a building and then zooms in, what is the visual state of the scene at the instant the camera completes its zoom to focus on the person sitting in the foreground?",
+  "subs": [
+   "A timelapse of a grassy hillside with a building in the background.",
+   "The camera pans left across the green landscape to reveal the structure.",
+   "The camera zooms in to focus on a person sitting in the foreground.",
+   "The person sits still while the camera completes its zoom on the hillside."
+  ]
+ },
+ "T0032": {
+  "full": "Identify the moment the scene transitions from the two slender fish with yellow heads and blue stripes hovering over the sandy seabed to the camouflaged fish with mottled brown and green patterns resting motionless near a large, textured rock formation.",
+  "subs": [
+   "Two slender fish with yellow heads and blue stripes hover over a sandy seabed.",
+   "A camouflaged fish with mottled brown and green patterns rests motionless near a large textured rock formation."
+  ]
+ },
+ "T0033": {
+  "full": "Identify the moment the camera transitions from the underwater view of legs beneath the board to the person paddling on the surface under the bright sky.",
+  "subs": [
+   "A person's legs are submerged underwater beneath a diving board.",
+   "A person is paddling on the water surface.",
+   "The scene shows a bright sky above the water.",
+   "The camera transitions from an underwater view to the surface."
+  ]
+ },
+ "T0036": {
+  "full": "After the camera focus shifts from the dry grass to reveal the houses and white fence, at what exact moment does the cyclist in the red and white outfit become clearly visible riding along the path behind the fence?",
+  "subs": [
+   "dry grass in the foreground of the scene",
+   "white fence and houses in the background",
+   "cyclist in red and white outfit riding on path",
+   "camera focus shift from grass to houses and fence"
+  ]
+ },
+ "T0037": {
+  "full": "After the camera stabilizes to show the boat deck and the man in the white shirt standing next to the seated diver, at what instant does the man begin adjusting the diver's scuba gear?",
+  "subs": [
+   "A man in a white shirt stands on a boat deck.",
+   "A diver sits on the boat deck wearing scuba gear.",
+   "The man adjusts the seated diver's scuba gear.",
+   "The camera shows the boat deck during the day."
+  ]
+ },
+ "T0038": {
+  "full": "Identify the moment the driver adjusts their grip on the steering wheel, occurring after the initial grip is established and before they maintain steady control during the drive.",
+  "subs": [
+   "A driver adjusts their grip on the steering wheel.",
+   "The driver holds the steering wheel with a firm initial grip.",
+   "A driver maintains steady control of the steering wheel during the drive."
+  ]
+ },
+ "T0040": {
+  "full": "Identify the moment the metal guardrail appears on the left side of the road, occurring after the vehicle travels through the dense forest and the scenery opens up to reveal the distant mountain range.",
+  "subs": [
+   "A vehicle travels through a dense forest with no guardrails visible.",
+   "The scenery opens up to reveal a distant mountain range.",
+   "A metal guardrail appears on the left side of the road."
+  ]
+ },
+ "T0041": {
+  "full": "Identify the moment when the camera finishes panning left to focus on the staircase risers labeled 'PROBLEM SOLVING' and 'CURIOSITY', immediately after the man holding the green pillar is removed from the view.",
+  "subs": [
+   "A man holding a green pillar is removed from the view.",
+   "The camera pans left to focus on a staircase.",
+   "Staircase risers are labeled with the text \"PROBLEM SOLVING\".",
+   "Staircase risers are labeled with the text \"CURIOSITY\"."
+  ]
+ }
+}

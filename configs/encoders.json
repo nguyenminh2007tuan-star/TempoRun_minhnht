@@ -1,0 +1,30 @@
+[
+  {
+    "name": "metaclip2-h14-378",
+    "shards": "artifacts/index_metaclip2h/shards",
+    "model": "ViT-H-14-worldwide-378",
+    "pretrained": "metaclip2_worldwide",
+    "precision": "fp16"
+  },
+  {
+    "name": "pe-core-bigg-448",
+    "shards": "artifacts/index_pecore/shards",
+    "model": "PE-Core-bigG-14-448",
+    "pretrained": "meta",
+    "precision": "fp16"
+  },
+  {
+    "name": "siglip2-so400m-378",
+    "shards": "artifacts/index_siglip2/shards",
+    "model": "ViT-SO400M-14-SigLIP2-378",
+    "pretrained": "webli",
+    "precision": "fp16"
+  },
+  {
+    "name": "eva02-l-14-336",
+    "shards": "artifacts/index_eva02l/shards",
+    "model": "EVA02-L-14-336",
+    "pretrained": "merged2b_s6b_b61k",
+    "precision": "fp16"
+  }
+]

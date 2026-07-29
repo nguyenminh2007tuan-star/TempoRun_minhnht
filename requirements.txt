@@ -1,7 +1,18 @@
-torch>=2.1
-open_clip_torch>=2.24
-numpy>=1.24
+# Fusion side (stage 0-4). The rerank side pins its own versions in
+# gpu_pack/requirements.txt — install both.
+#
+# torch is NOT pinned here on purpose: the correct wheel depends on the GPU
+# architecture (cu124 for Ada/Ampere, cu128 for Blackwell). Install it FIRST,
+# following README §4, then install this file. Versions verified:
+#   torch 2.6.0+cu124  (RTX 4090)
+#   torch 2.11.0+cu128 (RTX PRO 4000 Blackwell)
+torch>=2.6
+
+open_clip_torch>=2.24,<3      # needs >=2.24 for ViT-SO400M-14-SigLIP2-378/webli
+numpy>=1.24,<2
 pillow>=10.0
 opencv-python-headless>=4.8
 tqdm>=4.66
-# system dependency (not pip): ffmpeg / ffprobe must be on PATH
+
+# system dependency (not pip): ffmpeg / ffprobe must be on PATH (stage 0a).
+# Index shipped with this repo was built with ffmpeg 4.2.7 — see README §11.

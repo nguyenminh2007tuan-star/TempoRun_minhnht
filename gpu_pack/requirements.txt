@@ -1,0 +1,11 @@
+transformers==5.8.1
+huggingface_hub==1.14.0
+tokenizers==0.22.2
+safetensors==0.7.0
+sentence-transformers==5.4.1
+accelerate==1.13.0
+qwen-vl-utils==0.0.14
+hf_xet
+Pillow
+numpy
+tqdm

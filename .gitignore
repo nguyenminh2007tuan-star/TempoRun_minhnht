@@ -1,14 +1,37 @@
-# generated artifacts — regenerate with extract_keyframes.py / extract_embed.py / retrieve.py
+# Large regenerable artifacts — see README for how to obtain or rebuild each.
 artifacts/
 shards/
+index_qwen8b/
+index_siglip2/
+keyframes/
+kf_*/
+rerank_inputs/
+outputs/
 *.npz
 *.npy
-submission*.json
+*.tar
+*.part[0-9]*
 failed_*.txt
-kf_*/
-keyframes/
 __pycache__/
 *.pyc
+
+# Release payload staged locally — these are uploaded to GitHub Releases, never
+# committed (a single part is 1.7 GB, far over GitHub's 100 MB per-file limit).
+release_assets/
+pod_private/
+pod_ship/
+experiments_extra/
+
+# ...but the small query-side artifacts ARE part of the submission: they are what
+# lets the reviewer skip the Kaggle-side embedding steps and still reproduce the run.
+!precomputed/
+!precomputed/*.npz
+!precomputed/*.json
+
+# The submitted predictions themselves must be in the repo.
+!submits_private/
+!submits_private/*.json
+!submits_private/*.zip
 
 # dev/editor cruft — never ship
 *.bak

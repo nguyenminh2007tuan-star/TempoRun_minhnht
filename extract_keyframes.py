@@ -1,21 +1,25 @@
-"""Stage 1 — extract I-frames (keyframes) per video via ffmpeg. NO model, NO embedding.
+"""Stage 1 — extract candidate frames per video via ffmpeg. NO model, NO embedding.
 
-For every video we run ffmpeg with `-skip_frame nokey` (the decoder emits only
-keyframes) plus the `showinfo` filter to recover each keyframe's `pts_time`
-(-> clip-relative timestamp). The keyframe JPGs and their timestamps are written
-to disk so that embedding (Stage 2, `extract_embed.py`) is a completely separate
-step — you can re-embed the SAME frames with a different encoder without
-re-decoding any video.
+For every video we run one ffmpeg pass with a `select` filter that keeps every
+I-frame (representative shot-change frames) PLUS guarantees at least one frame
+every `--max-gap-s` seconds even inside long static shots — I-frame spacing
+alone is content-dependent and unbounded, which risks a task's labeled interval
+containing zero candidate frames. The `showinfo` filter recovers each kept
+frame's `pts_time` (-> clip-relative timestamp). The JPGs and their timestamps
+are written to disk so that embedding (Stage 2, `extract_embed.py`) is a
+completely separate step — you can re-embed the SAME frames with a different
+encoder without re-decoding any video.
 
 Output layout (one folder per video):
-  <out>/<video_id>/k_00001.jpg, k_00002.jpg, ...   keyframe images (q:v 3)
+  <out>/<video_id>/k_00001.jpg, k_00002.jpg, ...   frame images (q:v 3)
   <out>/<video_id>/ts_ms.npy                        int32[K] timestamps, aligned to sorted jpgs
 
 `ts_ms.npy` is written last and acts as the "done" marker:
   - Resumable: a video whose `ts_ms.npy` exists is skipped.
   - Shardable across processes: --shard-index / --shard-count.
 
-Method ref: I-frame extraction with ffmpeg (`-skip_frame nokey`).
+Method ref: `select='eq(pict_type,I)+gte(t-prev_selected_t,N)'` (full decode,
+no more `-skip_frame nokey` since non-key frames may now be selected too).
 """
 from __future__ import annotations
 import argparse, glob, os, re, shutil, subprocess, time
@@ -65,12 +69,21 @@ def list_from_file(path):
     return vids
 
 
-def extract_keyframes(mp4: str, out_dir: str):
-    """One ffmpeg pass. Writes k_*.jpg into out_dir; returns (jpg_paths, ts_ms) aligned."""
+def extract_keyframes(mp4: str, out_dir: str, max_gap_s: float = 2.0):
+    """One ffmpeg pass. Writes k_*.jpg into out_dir; returns (jpg_paths, ts_ms) aligned.
+
+    Keeps every I-frame (representative shot-change frames) PLUS guarantees at
+    least one frame every `max_gap_s` seconds even inside long static shots —
+    I-frame spacing alone is content-dependent/unbounded, which risks a task's
+    labeled interval containing zero candidate frames. `prev_selected_t` is an
+    ffmpeg-tracked var (time of the last frame this filter selected), so this
+    needs a full decode (no more `-skip_frame nokey`) but stays a single pass.
+    """
     os.makedirs(out_dir, exist_ok=True)
     pat = os.path.join(out_dir, "k_%05d.jpg")
-    cmd = [FFMPEG, "-hide_banner", "-loglevel", "info", "-skip_frame", "nokey",
-           "-i", mp4, "-vsync", "0", "-vf", "showinfo", "-q:v", "3", pat]
+    select = f"select='eq(pict_type,I)+gte(t-prev_selected_t,{max_gap_s})',showinfo"
+    cmd = [FFMPEG, "-hide_banner", "-loglevel", "info",
+           "-i", mp4, "-vsync", "0", "-vf", select, "-q:v", "3", pat]
     proc = subprocess.run(cmd, stderr=subprocess.PIPE, stdout=subprocess.DEVNULL)
     pts = [float(x) for x in PTS_RE.findall(proc.stderr.decode("utf-8", "ignore"))]
     files = sorted(glob.glob(os.path.join(out_dir, "k_*.jpg")))
@@ -91,6 +104,8 @@ def main():
     p.add_argument("--shard-index", type=int, default=0)
     p.add_argument("--shard-count", type=int, default=1)
     p.add_argument("--limit", type=int, default=0, help="debug: cap #videos")
+    p.add_argument("--max-gap-s", type=float, default=2.0,
+                    help="guarantee a frame at least every N seconds even inside static shots")
     args = p.parse_args()
 
     out = Path(args.out)
@@ -113,7 +128,7 @@ def main():
             done += 1
             continue
         try:
-            files, ts = extract_keyframes(mp4, str(vdir))
+            files, ts = extract_keyframes(mp4, str(vdir), max_gap_s=args.max_gap_s)
             if not files:
                 raise RuntimeError("no keyframes")
             np.save(ts_path, np.asarray(ts, dtype=np.int32))  # written last = done marker
