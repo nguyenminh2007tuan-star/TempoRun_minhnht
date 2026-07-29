@@ -43,6 +43,36 @@ trường điểm, cửa sổ chuyển động, sự đồng thuận giữa hai 
 
 ---
 
+## 1b. Điểm nổi bật của phương pháp
+
+**Cho một cross-encoder ảnh tĩnh "nhìn thấy" thời gian.** Reranker là mô hình text↔ảnh,
+bản thân không biết gì về chuyển động. Thay vì đổi sang mô hình video, mỗi ứng viên được
+ghép thành **một ảnh: 3 hoặc 5 khung liên tiếp xếp ngang**, và prompt nói thẳng
+"khung GIỮA là khoảnh khắc đang hỏi, hai bên là bối cảnh trước/sau". Nhờ đó một mô hình
+ảnh tĩnh sinh ra được tín hiệu thời gian — không cần huấn luyện, không cần mô hình video.
+
+**Fusion bất đối xứng theo năng lực encoder.** Ensemble thường đưa cùng một truy vấn cho
+mọi encoder. Ở đây mỗi encoder nhận dạng dữ liệu nó xử lý tốt nhất: SigLIP2 (trần ~64
+token) nhận **sub-query ngắn do LLM viết lại**, còn Qwen3-VL-Embedding-8B (ngữ cảnh 32k)
+nuốt **nguyên câu truy vấn**. Trọng số 1 : 8 phản ánh chênh lệch chất lượng đã đo.
+
+**Tối ưu theo metric, không chỉ theo mô hình.** Metric là Frame-in-Interval — interval có
+**độ rộng**, mà rank-1 của reranker thường đậu ở **mép** rồi rơi ra ngoài. Centroid-nudge
+vì thế không lấy argmax mà lấy **trọng tâm cụm điểm** quanh rank-1. Đây là quan sát về đề
+bài chứ không phải về mô hình.
+
+**Hậu xử lý có bảo hiểm cấu trúc.** Consensus chèn ứng viên thay thế vào **rank-2**, nên
+R@1 về mặt cấu trúc **không thể giảm** — chỉ hoà hoặc thắng.
+
+**Kỷ luật thực nghiệm.** Tám hướng hậu xử lý khác đã bị **bác bỏ bằng đo đạc** (OCR-boost,
+VLM-judge chấm lại top-10, grounding interval, ensemble int8+fp16, diversify top-10…).
+Nguyên tắc rút ra: *tín hiệu ngoài yếu hơn reranker thì trộn kiểu gì cũng thua; chỉ có tín
+hiệu vắt ra từ chính reranker mới cải thiện được.* Riêng centroid-nudge ăn ở vòng public
+nhưng **không** ăn ở vòng private — chính vì lường trước rủi ro không tổng quát hoá này mà
+năm biến thể đã được nộp để phủ trục bất định, và bản tắt centroid mới là bản cao điểm nhất.
+
+---
+
 ## 2. Cấu trúc repository
 
 ```
@@ -433,6 +463,6 @@ liệu test ra dịch vụ ngoài. Model duy nhất tải từ mạng là trọn
 | Cài đặt môi trường | Conda hoặc pip — xem §4 |
 | Phần cứng đã kiểm thử | RTX PRO 4000 Blackwell 24 GB (CUDA 12.8) và RTX 4090 24 GB (CUDA 12.4) |
 | Lệnh chạy chính | xem §9 |
-| Liên hệ | _(điền)_ |
+| Liên hệ | nguyenminh2007.tuan@gmail.com |
 
 > `README_baseline_BTC.md` là README gốc của baseline do BTC cung cấp, giữ lại để tham khảo.
