@@ -354,7 +354,15 @@ python embed_qwen8b_private.py         # -> query_emb_qwen8b_private.npz
 python embed_siglip2_private.py        # -> siglip2_subs_private.npz
 ```
 
-### Xây lại index từ đầu (không bắt buộc, ~8 giờ GPU)
+### Xây lại index từ đầu — **TÙY CHỌN, không thuộc đường tái lập chính thức** (~8 giờ GPU)
+
+Đường chính thức là **tải index từ Release** (§5.2): index là tài nguyên đầu vào đã tính
+sẵn, còn repo lo toàn bộ phần từ index + truy vấn → submission. Phần dưới đây chỉ dành
+cho ai muốn dựng lại index từ video, và **không cần chạy để tái lập kết quả đã nộp**.
+
+`extract_embed.py` chính là script đã dựng `index_siglip2` được dùng cho kết quả chính
+thức. Với `index_qwen8b`, xem ghi chú về nguồn gốc ở §5.2.
+
 
 ```bash
 python extract_embed.py      --keyframes keyframes --out index_siglip2 \
