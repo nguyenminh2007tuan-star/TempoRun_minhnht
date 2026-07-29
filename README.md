@@ -390,7 +390,7 @@ liệu test ra dịch vụ ngoài. Model duy nhất tải từ mạng là trọn
 | Tên đội | **LongJustin** |
 | Tên phương pháp | SQ8-Fusion → VLM-Rerank → Centroid-Nudge → Consensus |
 | Repository | https://github.com/nguyenminh2007tuan-star/TempoRun_minhnht |
-| Commit / tag | _(điền)_ |
+| Commit / tag | `01ae3154f1bbf5745043e900f8557f4e202c0078` (tag `v1.0`) |
 | Cài đặt môi trường | Conda hoặc pip — xem §4 |
 | Phần cứng đã kiểm thử | RTX PRO 4000 Blackwell 24 GB (CUDA 12.8) và RTX 4090 24 GB (CUDA 12.4) |
 | Lệnh chạy chính | xem §9 |
