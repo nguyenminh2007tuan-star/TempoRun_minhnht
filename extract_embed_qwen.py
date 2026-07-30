@@ -34,6 +34,10 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--device", default="cuda:0")
+    # fp16 by default because it runs on every card this was tested on, T4 (sm_75)
+    # included. The shipped index_qwen8b was produced with bf16 on the teammate's
+    # machine; bf16 has no hardware support before Ampere, so it is opt-in here.
+    ap.add_argument("--dtype", default="float16", choices=["float16", "bfloat16"])
     ap.add_argument("--batch-size", type=int, default=8)
     ap.add_argument("--shard-index", type=int, default=0)
     ap.add_argument("--shard-count", type=int, default=1)
@@ -54,9 +58,10 @@ def main():
 
     import torch
     from sentence_transformers import SentenceTransformer
+    dtype = getattr(torch, args.dtype)
     model = SentenceTransformer(args.model, device=args.device,
-                                model_kwargs={"dtype": torch.float16})
-    print(f"[qwen] {args.model} on {args.device} fp16", flush=True)
+                                model_kwargs={"dtype": dtype})
+    print(f"[qwen] {args.model} on {args.device} {args.dtype}", flush=True)
 
     t0 = time.time(); done = nframes = failed = 0
     for vdir in mine:

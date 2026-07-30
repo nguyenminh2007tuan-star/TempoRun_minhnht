@@ -219,7 +219,22 @@ Số shard kỳ vọng: **index_qwen8b 5006**, **index_siglip2 5004** (xem §11)
 | Index | Tạo bằng | Ghi chú |
 |---|---|---|
 | `index_siglip2` | `extract_embed.py` trong repo này | model `ViT-SO400M-14-SigLIP2-378` / `webli`, fp16 |
-| `index_qwen8b` | pipeline embed nội bộ của đội (máy khác, cùng model `Qwen/Qwen3-VL-Embedding-8B`) | `extract_embed_qwen.py` trong repo tạo ra index **cùng contract** — `emb[K,4096] float16` đã L2-normalize + `ts_ms[K] int32` — nhưng **không đảm bảo trùng bit-for-bit** với bản đã nộp |
+| `index_qwen8b` | **một thành viên đội Nht chạy giúp trên máy của họ**, dùng `Qwen/Qwen3-VL-Embedding-8B` trên **chính bộ keyframe của chúng tôi** (do `extract_keyframes.py` trong repo này trích, `--max-gap-s 2.0`) | `extract_embed_qwen.py` trong repo tạo ra index **cùng contract** — `emb[K,4096] float16` đã L2-normalize + `ts_ms[K] int32` — nhưng **không đảm bảo trùng bit-for-bit** với bản đã nộp |
+
+Nói rõ về nguồn gốc `index_qwen8b`: chúng tôi không có đủ GPU để chạy 8B trên ~579k
+keyframe, nên đã **gửi bộ keyframe của mình cho một bạn ở đội Nht embed hộ** và nhận lại
+các shard. Đầu vào là keyframe của chúng tôi, mốc thời gian `ts_ms` khớp 100% với bản
+trích trong repo này; phần bạn ấy đóng góp là **thời gian máy**, không phải dữ liệu hay
+thiết kế pipeline. Toàn bộ fusion, rerank và hậu xử lý ở §6–§8 là của đội chúng tôi.
+
+Về mặt kỹ thuật, hai bên khớp nhau ở những chỗ quyết định kết quả: cùng
+`Qwen/Qwen3-VL-Embedding-8B`, cùng pooling token cuối, cùng L2-normalize, và cùng
+ngân sách điểm ảnh mặc định của model (`MIN_PIXELS = 4·32²`, `MAX_PIXELS = 1800·32²`,
+khai báo trong `qwen3_vl_embedding.py` của chính snapshot HF — không bên nào ghi đè).
+Khác biệt đã biết là **kiểu số**: bản đã nộp chạy `bfloat16`, còn `extract_embed_qwen.py`
+mặc định `float16` vì fp16 chạy được trên mọi card đã thử, kể cả T4 (sm_75) vốn không có
+hỗ trợ phần cứng cho bf16. Muốn bám sát bản gốc thì truyền `--dtype bfloat16` trên GPU
+Ampere trở lên; sai khác giữa hai kiểu vào cỡ 1e-3 tương đối, không đảo thứ hạng cosine.
 
 Vì vậy **nên dùng index tải từ Release** để tái lập đúng kết quả chính thức; xây lại chỉ
 là đường dự phòng.
@@ -373,6 +388,8 @@ python extract_embed.py      --keyframes keyframes --out index_siglip2 \
 # và không khớp với query embedding.
 python extract_embed_qwen.py --keyframes keyframes --out index_qwen8b \
                              --model Qwen/Qwen3-VL-Embedding-8B
+# Trên GPU Ampere trở lên có thể thêm `--dtype bfloat16` để bám sát bản index đã nộp
+# (xem §5.2). Trên T4/Turing thì giữ mặc định float16.
 ```
 
 ### Kiểm tra tính trung thực của bước hậu xử lý (tuỳ chọn)
@@ -396,6 +413,7 @@ lập bài nộp, không cần chỉnh gì thêm.
 |---|---|---|
 | Khoảng cách keyframe tối đa | 2.0 s (`--max-gap-s`) — quyết định số keyframe của index | `extract_keyframes.py` |
 | Model dựng index ảnh | `Qwen/Qwen3-VL-Embedding-8B` — **phải truyền `--model`**, mặc định script là bản 2B | `extract_embed_qwen.py` |
+| Kiểu số khi dựng index ảnh | `float16` (mặc định, chạy được cả T4); bản đã nộp dùng `bfloat16` — xem §5.2 | `extract_embed_qwen.py --dtype` |
 | Trọng số encoder | SigLIP2 = 1, Qwen8B = 8 | `configs/enc_SQ8_private.json` |
 | Hằng số RRF `k` | 60 | `retrieve_fusion.py --rrf-k` |
 | Ứng viên mỗi encoder | 400 | `--cand-keyframes` |
@@ -480,6 +498,12 @@ Sai khác **có thể** xảy ra khi đổi máy: thứ tự cộng dồn dấu 
 trúc có thể xê dịch vài ứng viên **gần như đồng điểm** ở phần đuôi bảng xếp hạng. Mức ảnh
 hưởng dự kiến rất nhỏ và hầu như không chạm rank-1.
 
+**Index Qwen8B chạy nhờ máy của đội khác.** Bước embed 8B (§5.2) do một bạn ở **đội Nht**
+chạy hộ trên GPU của họ vì chúng tôi không đủ tài nguyên. Đầu vào là **keyframe của chúng
+tôi**, đầu ra là các shard `emb`/`ts_ms`; không có dữ liệu, nhãn hay thiết kế pipeline nào
+đến từ phía họ. Ghi ra đây cho minh bạch — nếu BTC coi đây là vi phạm quy định về hợp tác
+giữa các đội, xin liên hệ theo địa chỉ ở §12 để chúng tôi xử lý.
+
 **Không có thao tác thủ công.** Toàn bộ prediction sinh ra tự động từ mã nguồn trong repo:
 không gán nhãn tay, không sửa kết quả theo từng task, không gọi API trả phí, không gửi dữ
 liệu test ra dịch vụ ngoài. Model duy nhất tải từ mạng là trọng số mở trên HuggingFace
@@ -496,7 +520,7 @@ liệu test ra dịch vụ ngoài. Model duy nhất tải từ mạng là trọn
 | Repository | https://github.com/nguyenminh2007tuan-star/TempoRun_minhnht |
 | Commit / tag | release tag **`v1.0`** |
 | Cài đặt môi trường | Conda hoặc pip — xem §4 |
-| Phần cứng đã kiểm thử | RTX PRO 4000 Blackwell 24 GB (CUDA 12.8) và RTX 4090 24 GB (CUDA 12.4) |
+| Phần cứng đã kiểm thử | RTX PRO 4000 Blackwell 24 GB (CUDA 12.8) và RTX 4090 24 GB (CUDA 12.4); embed query trên Kaggle T4×2; **index Qwen8B do một bạn đội Nht chạy giúp trên máy của họ từ keyframe của chúng tôi — xem §5.2** |
 | Lệnh chạy chính | xem §9 |
 | Liên hệ | nguyenminh2007.tuan@gmail.com |
 
